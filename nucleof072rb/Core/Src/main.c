@@ -45,7 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-const float COUNTER_PERIOD = 40000.0;
+const float COUNTER_PERIOD = 64000.0;
 const float DUTY_5P = COUNTER_PERIOD  / 20.0; // diving by whole numbers only for now so as to not cause floating point errors
 const float DUTY_10P = COUNTER_PERIOD / 10.0;
 /* USER CODE END PV */
@@ -95,7 +95,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 40000 / 100 * 5); // set duty cycle to 5% by default
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (int)COUNTER_PERIOD); // set duty cycle to 5% by default
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -103,6 +103,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
 	  HAL_Delay(10);
 	  uint8_t inputFrame[] = {0b11000000, 0, 0}; // since frame size is 8 bits, we want the last input frame to be 0 or a new transmission might accidentally be started :'(
@@ -116,7 +117,7 @@ int main(void)
 
 	  // output should be something from 0 to 1023, map 0 to 5% duty cycle, 1023 to 10% duty cycle
 	  float weight10p = output / 1023.0;
-	  float weight5p = 1.0 - weight5p;
+	  float weight5p = 1.0 - weight10p;
 	  float floatPwmCounter = DUTY_5P * weight5p + DUTY_10P * weight10p;
 	  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, (uint32_t)floatPwmCounter);
 
